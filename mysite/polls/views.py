@@ -52,7 +52,7 @@ def vote(request, question_id):
     selected_choice.votes+=1
     selected_choice.save()
     # return HttpResponseRedirect to prevent data from being POST twice if user hits back button
-    return HttpResponseRedirect(reverse("polls:results",args=(question.id)))
+    return HttpResponseRedirect(reverse("polls:results",args=(question.id,)))
 
 """
 Each new view must be wired into .urls file
