@@ -2,10 +2,16 @@ import datetime
 
 from django.test import TestCase
 from django.utils import timezone
+from django.urls import reverse
 
 from .models import Question
 
 #execute using py manage.py test <app name> ex. polls
+
+#creates test question with text and offset days from now
+def create_question(question_text, days):
+  time = timezone.now() + datetime.timedelta(days=days)
+  return Question.objects.create(question_text=question_text, pub_date=time)
 
 # Create your tests here.
 class QuestionModelsTests(TestCase):
@@ -26,3 +32,38 @@ class QuestionModelsTests(TestCase):
     time = timezone.now() - datetime.timedelta(hours=23,minutes=59,seconds=59)
     recent_question = Question(pub_date=time)
     self.assertIs(recent_question.was_published_recently(),True)
+
+class QuestionIndexViewTests(TestCase):
+  def test_no_questions(self):
+    #message when no questions exist
+    response = self.client.get(reverse("polls:index"))
+    self.assertEqual(response.status_code, 200)
+    self.assertContains(response, "No polls are available")
+    self.assertQuerySetEqual(response.context["latest_question_list"], [])
+
+  def test_past_questions(self):
+    #question with past date should be displayed
+    question = create_question(question_text="Past question",days=-30)
+    response = self.client.get(reverse("polls:index"))
+    self.assertQuerySetEqual(response.context["latest_question_list"],[question],)
+
+  def test_future_question(self):
+    #question with future date should not be displayed
+    create_question(question_text="Future question",days=30)
+    response = self.client.get(reverse("polls:index"))
+    self.assertContains(response, "No polls are available")
+    self.assertQuerySetEqual(response.context["latest_question_list"],[])
+
+  def test_future_and_past_question(self):
+    #only show past questions even if future ones exist
+    question = create_question(question_text="Past question",days=-30)
+    create_question(question_text="Future question",days=30)
+    response = self.client.get(reverse("polls:index"))
+    self.assertQuerySetEqual(response.context["latest_question_list"],[question],)
+
+  def test_two_past_questions(self):
+    #show all questions that are in the past
+    question1 = create_question(question_text="Past question 1",days=-30)
+    question2 = create_question(question_text="Past question 2", days=-5)
+    response = self.client.get(reverse("polls:index"))
+    self.assertQuerySetEqual(response.context["latest_question_list"],[question2, question1],)
