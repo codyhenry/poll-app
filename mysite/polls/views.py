@@ -65,6 +65,10 @@ class DetailView(generic.DetailView):
   template_name = "polls/detail.html"
   #context_object_name will default to question
 
+  def get_queryset(self):
+    #exclude questions that are not published yet (future)
+    return Question.objects.filter(pub_date__lte=timezone.now()) 
+
 class ResultsView(generic.DetailView):
   model = Question
   template_name = "polls/results.html"
