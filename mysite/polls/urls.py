@@ -3,7 +3,6 @@ from django.urls import path
 from . import views
 
 # namespace for urls
-app_name = "polls"
 """ old views not using generic views
 urlpatterns = [
   #/polls
@@ -17,6 +16,7 @@ urlpatterns = [
 ]
 """
 
+app_name = "polls"
 #int:pk used because DetailView expects primary key value to be called "pk"
 urlpatterns = [
   #/polls

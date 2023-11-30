@@ -55,6 +55,7 @@ class IndexView(generic.ListView):
   #ex. question_list
   context_object_name = "latest_question_list"
 
+  #exclude questions that are not published yet
   def get_queryset(self):
     return Question.objects.filter(pub_date__lte=timezone.now()).order_by("-pub_date")[:5]
   
